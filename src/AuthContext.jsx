@@ -35,25 +35,26 @@ export function AuthProvider({ children }) {
 
   // TODO: authenticate
   const authenticate = async () => {
-    if (!token) throw new Error("No token provided");
+    if (!token) throw Error("No token provided");
 
     try {
       const response = await fetch(API + "/authenticate", {
         method: "GET",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
+      if(!response.ok) throw Error("no token");
+      setLocation("TUNNEL");
 
-      const result = await response.json();
+      /*const result = await response.json();
       const success = result.success;
 
       if (success) {
         setLocation("Tunnel");
       } else {
-        throw new Error("Failed to authenicate");
-      }
+        throw Error("Failed to authenicate");
+      }*/
     } catch (e) {
       console.error(e);
     }
