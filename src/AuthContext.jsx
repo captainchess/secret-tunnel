@@ -9,44 +9,57 @@ export function AuthProvider({ children }) {
   const [location, setLocation] = useState("GATE");
 
   // TODO: signup
-  const signup = async (username) => {
+  const getToken = async (username) => {
     try {
       const response = await fetch(API + "/signup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(username),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: username }),
       });
       const result = await response.json();
-      setToken(result.token);
+      console.debug(result);
       setLocation("TABLET");
+      return result.token;
     } catch (e) {
       console.error(e);
     }
   };
 
+  const signup = async (formData) => {
+    const username = formData.get("name");
+    const token = await getToken(username);
+    setToken(token);
+  };
+
   // TODO: authenticate
-  const authenticate = async (token) => {
+  const authenticate = async () => {
+    if (!token) throw new Error("No token provided");
+
     try {
       const response = await fetch(API + "/authenticate", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
       });
+
       const result = await response.json();
-      const message = result.message;
-      if (message === "Correctly Authenticated"){
-        setLocation("Tunnel")
+      const success = result.success;
+
+      if (success) {
+        setLocation("Tunnel");
       } else {
         throw new Error("Failed to authenicate");
-      };
+      }
     } catch (e) {
       console.error(e);
     }
   };
 
-  const value = { location };
+  const value = { location, signup, authenticate };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
